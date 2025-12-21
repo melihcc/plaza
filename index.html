@@ -3,203 +3,196 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sedai Plaza | Aidat Takip</title>
+
+  <title>Sedai Plaza Aidat Takip Sistemi | Online Aidat Görüntüleme</title>
+
+  <meta name="description"
+        content="Sedai Plaza için ofis aidat ve demirbaş borçlarını online görüntüleme sistemi. Güvenli, hızlı ve kurulum gerektirmeyen aidat takip platformu.">
+
+  <meta name="robots" content="index,follow">
+
   <link rel="icon" href="data:,">
 
-  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --primary: #2563eb;
-      --bg: #f4f6fb;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e5e7eb;
-      --danger: #dc2626;
+      --primary:#2563eb;
+      --bg:#f4f6fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e5e7eb;
+      --danger:#dc2626;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing:border-box }
 
     body {
-      margin: 0;
-      font-family: "Inter", system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      margin:0;
+      font-family:"Inter",system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
     }
 
     .page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding:24px;
     }
 
     .container {
-      width: 100%;
-      max-width: 1100px;
+      width:100%;
+      max-width:1100px;
     }
 
     /* LOGIN */
     .login-card {
-      max-width: 420px;
-      margin: auto;
-      background: var(--card);
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.08);
+      max-width:420px;
+      margin:auto;
+      background:var(--card);
+      border-radius:16px;
+      padding:32px;
+      box-shadow:0 20px 40px rgba(0,0,0,.08);
     }
 
     .login-card h1 {
-      margin: 0 0 6px;
-      font-size: 26px;
-      font-weight: 700;
+      margin:0 0 6px;
+      font-size:26px;
+      font-weight:700;
     }
 
     .login-card p {
-      margin: 0 0 24px;
-      color: var(--muted);
-      font-size: 14px;
+      margin:0 0 24px;
+      color:var(--muted);
+      font-size:14px;
     }
 
-    .field {
-      margin-bottom: 16px;
-    }
+    .field { margin-bottom:16px }
 
     .field label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 6px;
+      display:block;
+      font-size:13px;
+      font-weight:500;
+      margin-bottom:6px;
     }
 
     .field input {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      font-size: 14px;
-      transition: border-color .2s, box-shadow .2s;
-    }
-
-    .field input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,.15);
-    }
-
-    .input-error {
-      border-color: var(--danger) !important;
-      box-shadow: 0 0 0 3px rgba(220,38,38,.15);
-    }
-
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      50% { transform: translateX(4px); }
-      75% { transform: translateX(-4px); }
-      100% { transform: translateX(0); }
-    }
-
-    .shake {
-      animation: shake .3s;
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      font-size:14px;
     }
 
     .btn-primary {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      background: var(--primary);
-      color: white;
-      font-weight: 600;
-      font-size: 15px;
-      cursor: pointer;
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:none;
+      background:var(--primary);
+      color:white;
+      font-weight:600;
+      font-size:15px;
+      cursor:pointer;
     }
 
     .login-error {
-      color: var(--danger);
-      font-size: 13px;
-      margin-top: 12px;
+      color:var(--danger);
+      font-size:13px;
+      margin-top:12px;
     }
 
     /* DASHBOARD */
-    .dashboard { display: none; }
+    .dashboard { display:none }
 
     .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:24px;
     }
 
     .title h2 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 700;
+      margin:0;
+      font-size:22px;
+      font-weight:700;
     }
 
     .title span {
-      font-size: 13px;
-      color: var(--muted);
+      font-size:13px;
+      color:var(--muted);
     }
 
     .btn-outline {
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: white;
-      cursor: pointer;
-      font-weight: 500;
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:white;
+      cursor:pointer;
+      font-weight:500;
     }
 
     .card {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 24px rgba(0,0,0,.05);
+      background:var(--card);
+      border-radius:16px;
+      padding:20px;
+      box-shadow:0 10px 24px rgba(0,0,0,.05);
     }
 
     table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 16px;
+      width:100%;
+      border-collapse:collapse;
+      margin-top:16px;
     }
 
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-      font-size: 14px;
+    th,td {
+      padding:12px;
+      border-bottom:1px solid var(--border);
+      font-size:14px;
     }
 
-    th { color: var(--muted); }
+    th { color:var(--muted) }
 
     td:last-child, th:last-child {
-      text-align: right;
+      text-align:right;
     }
 
     #officeGrid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
-      margin-top: 20px;
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+      gap:16px;
+      margin-top:20px;
     }
 
     .officeCard {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 10px 24px rgba(0,0,0,.06);
+      background:var(--card);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 24px rgba(0,0,0,.06);
     }
 
     .officeCard h4 {
-      margin: 0 0 12px;
-      font-size: 18px;
+      margin:0 0 12px;
+      font-size:18px;
     }
+
+    /* SEO TEXT */
+    .seo-section {
+      margin-top:60px;
+      max-width:900px;
+      margin-left:auto;
+      margin-right:auto;
+      color:#475569;
+      font-size:14px;
+      line-height:1.7;
+    }
+
+    .seo-section p { margin-bottom:14px }
   </style>
 </head>
+
 <body>
 
 <div class="page">
@@ -207,7 +200,7 @@
   <!-- LOGIN -->
   <div id="loginCard" class="login-card">
     <h1>Sedai Plaza</h1>
-    <p>Aidat ve demirbaş bilgilerinizi görüntüleyin</p>
+    <p>Aidat ve demirbaş bilgilerinizi online görüntüleyin</p>
 
     <div class="field">
       <label>E-posta</label>
@@ -220,11 +213,10 @@
     </div>
 
     <button id="loginBtn" class="btn-primary">Giriş Yap</button>
-
     <div id="loginMsg" class="login-error"></div>
   </div>
 
-  <!-- USER -->
+  <!-- USER PANEL -->
   <div id="userPanel" class="container dashboard">
     <div class="topbar">
       <div class="title">
@@ -235,7 +227,7 @@
     </div>
 
     <div class="card">
-      <div id="userExcelStatus" class="title span"></div>
+      <div id="userExcelStatus"></div>
 
       <table>
         <thead>
@@ -255,7 +247,7 @@
     </div>
   </div>
 
-  <!-- ADMIN -->
+  <!-- ADMIN PANEL -->
   <div id="adminPanel" class="container dashboard">
     <div class="topbar">
       <div class="title">
@@ -269,13 +261,39 @@
       </div>
     </div>
 
-    <div id="adminExcelStatus" class="title span"></div>
+    <div id="adminExcelStatus"></div>
     <div id="officeGrid"></div>
   </div>
 
 </div>
 
+<!-- SEO CONTENT (GOOGLE İÇİN) -->
+<section class="seo-section">
+  <p>
+    <strong>Sedai Plaza Aidat Takip Sistemi</strong>, plaza ve site yönetimleri için
+    geliştirilmiş modern bir online aidat görüntüleme platformudur.
+    Ofis sahipleri, kendilerine tanımlı ofis numaralarına ait
+    <strong>aidat ve demirbaş borçlarını</strong> güvenli bir şekilde
+    internet üzerinden görüntüleyebilir.
+  </p>
+
+  <p>
+    Sistem, güncel aidat bilgilerini yönetim tarafından yüklenen veriler üzerinden
+    otomatik olarak sunar. Kullanıcılar, herhangi bir kurulum yapmadan
+    sadece tarayıcı üzerinden giriş yaparak
+    <strong>ofis aidat borçlarını online</strong> olarak takip edebilir.
+  </p>
+
+  <p>
+    Sedai Plaza için özel olarak geliştirilen bu platform,
+    şeffaflık, hız ve kullanım kolaylığını ön planda tutar.
+    Aidat takibi, borç sorgulama ve demirbaş bilgilerine erişim
+    tek bir ekrandan pratik şekilde sağlanır.
+  </p>
+</section>
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script type="module" src="./app.js"></script>
+
 </body>
 </html>
