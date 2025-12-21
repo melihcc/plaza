@@ -19,7 +19,7 @@ import {
   uploadBytes
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
-/* ================= FIREBASE ================= */
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyAnPVgBNvBcwBjiNSCEWnnNb-cE8getjYc",
   authDomain: "sedaiplazaapp.firebaseapp.com",
@@ -33,10 +33,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-
 const EXCEL_PATH = "deneme.xlsx";
 
-/* ================= UI (SADECE VAR OLANLAR) ================= */
+/* UI */
 const loginCard = document.getElementById("loginCard");
 const userPanel = document.getElementById("userPanel");
 const adminPanel = document.getElementById("adminPanel");
@@ -63,34 +62,60 @@ const officeGrid = document.getElementById("officeGrid");
 const uploadExcelBtn = document.getElementById("uploadExcelBtn");
 const excelFileInput = document.getElementById("excelFileInput");
 
-/* ================= EVENT BINDINGS ================= */
+/* EVENTS */
 loginBtn.addEventListener("click", login);
 
-/* ENTER ile giriş */
-[emailInput, passwordInput].forEach(input => {
-  input.addEventListener("keydown", (e) => {
+[emailInput, passwordInput].forEach(i => {
+  i.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
       login();
     }
   });
+  i.addEventListener("input", () => {
+    i.classList.remove("input-error");
+    loginMsg.textContent = "";
+  });
 });
 
-if (logoutBtn) logoutBtn.addEventListener("click", () => signOut(auth));
-if (logoutBtn2) logoutBtn2.addEventListener("click", () => signOut(auth));
+if (logoutBtn) logoutBtn.onclick = () => signOut(auth);
+if (logoutBtn2) logoutBtn2.onclick = () => signOut(auth);
+if (uploadExcelBtn) uploadExcelBtn.onclick = () => excelFileInput.click();
 
-if (uploadExcelBtn && excelFileInput) {
-  uploadExcelBtn.addEventListener("click", () => excelFileInput.click());
-}
-
-/* ================= HELPERS ================= */
+/* HELPERS */
 function fmtTL(n) {
   return (Number(n) || 0).toLocaleString("tr-TR") + " ₺";
 }
 
-/* ================= AUTH ================= */
+function authMessage(code) {
+  return {
+    "auth/invalid-email": "Geçerli bir e-posta adresi giriniz.",
+    "auth/user-not-found": "Bu e-posta ile kayıtlı kullanıcı bulunamadı.",
+    "auth/wrong-password": "Şifre hatalı.",
+    "auth/invalid-credential": "E-posta veya şifre hatalı.",
+    "auth/too-many-requests": "Çok fazla deneme yapıldı. Lütfen bekleyin.",
+    "auth/network-request-failed": "İnternet bağlantısı hatası."
+  }[code] || "Giriş yapılamadı. Lütfen tekrar deneyin.";
+}
+
+/* LOGIN */
 async function login() {
   loginMsg.textContent = "";
+  emailInput.classList.remove("input-error", "shake");
+  passwordInput.classList.remove("input-error", "shake");
+
+  if (!emailInput.value.trim()) {
+    emailInput.classList.add("input-error", "shake");
+    loginMsg.textContent = "E-posta adresi boş olamaz.";
+    return;
+  }
+
+  if (!passwordInput.value) {
+    passwordInput.classList.add("input-error", "shake");
+    loginMsg.textContent = "Şifre boş olamaz.";
+    return;
+  }
+
   try {
     await signInWithEmailAndPassword(
       auth,
@@ -98,38 +123,30 @@ async function login() {
       passwordInput.value
     );
   } catch (e) {
-    loginMsg.textContent = e.message;
+    passwordInput.classList.add("input-error", "shake");
+    loginMsg.textContent = authMessage(e.code);
   }
 }
 
-/* ================= FIRESTORE ================= */
-async function getUserByEmail(email) {
+/* FIRESTORE */
+async function getUser(email) {
   const snap = await getDocs(collection(db, email));
-  if (snap.empty) throw new Error("Kullanıcı Firestore kaydı bulunamadı.");
   return snap.docs[0].data();
 }
 
-/* ================= EXCEL ================= */
+/* EXCEL */
 async function loadWorkbook() {
   const url = await getDownloadURL(ref(storage, EXCEL_PATH));
   const buf = await fetch(url).then(r => r.arrayBuffer());
   return XLSX.read(buf, { type: "array" });
 }
 
-/* TARİH – GENEL!I1 */
-function extractUpdateDateFromGenel(wb) {
-  const sheet = wb.Sheets["GENEL"];
-  if (!sheet) return null;
-
-  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
-  const cell = rows?.[0]?.[8]; // I1
-
-  if (!cell || typeof cell !== "string") return null;
-
-  const m = cell.match(/(\d{2})-(\d{2})-(\d{4}).*?(\d{2}:\d{2})/);
-  if (!m) return null;
-
-  return `${m[1]}.${m[2]}.${m[3]} ${m[4]}`;
+function extractDate(wb) {
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets["GENEL"], { header: 1 });
+  const c = rows?.[0]?.[8];
+  if (!c) return "";
+  const m = c.match(/(\d{2}-\d{2}-\d{4}.*\d{2}:\d{2})/);
+  return m ? m[1].replace(/-/g, ".") : "";
 }
 
 function parseGenel(wb) {
@@ -137,9 +154,7 @@ function parseGenel(wb) {
   const map = new Map();
   rows.forEach(r => {
     for (let i = 0; i < r.length - 1; i += 2) {
-      if (r[i] && !isNaN(r[i + 1])) {
-        map.set(String(r[i]), Number(r[i + 1]));
-      }
+      if (r[i] && !isNaN(r[i + 1])) map.set(String(r[i]), Number(r[i + 1]));
     }
   });
   return map;
@@ -149,103 +164,81 @@ function parseDemirbas(wb) {
   const rows = XLSX.utils.sheet_to_json(wb.Sheets["DEMİRBAŞ"], { header: 1 });
   const map = new Map();
   rows.forEach(r => {
-    if (r[0] && !isNaN(r[4])) {
-      map.set(String(r[0]), Number(r[4]));
-    }
+    if (r[0] && !isNaN(r[4])) map.set(String(r[0]), Number(r[4]));
   });
   return map;
 }
 
-/* ================= ADMIN UPLOAD ================= */
-if (excelFileInput) {
-  excelFileInput.addEventListener("change", async e => {
-    const file = e.target.files[0];
-    if (!file) return;
+/* ADMIN UPLOAD */
+excelFileInput.addEventListener("change", async e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  await uploadBytes(ref(storage, EXCEL_PATH), f);
+  await loadAdmin(auth.currentUser.email);
+});
 
-    adminExcelStatus.textContent = "Excel yükleniyor...";
-    await uploadBytes(ref(storage, EXCEL_PATH), file);
-    await loadAdminScreen(auth.currentUser.email);
-  });
-}
-
-/* ================= SCREENS ================= */
-async function loadUserScreen(email) {
-  adminPanel.style.display = "none";
+/* SCREENS */
+async function loadUser(email) {
+  loginCard.style.display = "none";
   userPanel.style.display = "block";
 
-  const user = await getUserByEmail(email);
+  const user = await getUser(email);
   const wb = await loadWorkbook();
-  const aidatMap = parseGenel(wb);
-  const dateStr = extractUpdateDateFromGenel(wb);
+  const aidat = parseGenel(wb);
+  const date = extractDate(wb);
 
   userTitle.textContent = `${user.name} ${user.surname}`;
   userMeta.textContent = email;
-
   userDebtBody.innerHTML = "";
-  let total = 0;
 
+  let total = 0;
   user.no.forEach(no => {
-    const d = aidatMap.get(String(no)) || 0;
+    const d = aidat.get(String(no)) || 0;
     total += d;
     userDebtBody.innerHTML += `
-      <tr>
-        <td>${no}</td>
-        <td>${fmtTL(d)}</td>
-      </tr>`;
+      <tr><td>${no}</td><td>${fmtTL(d)}</td></tr>`;
   });
 
   userTotal.textContent = fmtTL(total);
   userExcelStatus.textContent =
-    "Aidat bilgileri güncel" +
-    (dateStr ? ` (Son güncelleme: ${dateStr})` : "");
+    "Aidat bilgileri güncel" + (date ? ` (Son güncelleme: ${date})` : "");
 }
 
-async function loadAdminScreen(email) {
-  userPanel.style.display = "none";
+async function loadAdmin(email) {
+  loginCard.style.display = "none";
   adminPanel.style.display = "block";
 
-  const user = await getUserByEmail(email);
+  const user = await getUser(email);
   const wb = await loadWorkbook();
-  const aidatMap = parseGenel(wb);
-  const demirbasMap = parseDemirbas(wb);
-  const dateStr = extractUpdateDateFromGenel(wb);
+  const aidat = parseGenel(wb);
+  const dem = parseDemirbas(wb);
+  const date = extractDate(wb);
 
   adminTitle.textContent = `${user.name} ${user.surname}`;
   adminMeta.textContent = email;
-
   officeGrid.innerHTML = "";
 
-  const all = new Set([...aidatMap.keys(), ...demirbasMap.keys()]);
-  [...all].sort((a, b) => a - b).forEach(ofis => {
+  [...new Set([...aidat.keys(), ...dem.keys()])].forEach(ofis => {
     officeGrid.innerHTML += `
       <div class="officeCard">
         <h4>Ofis ${ofis}</h4>
-        <p>Aidat: <b>${fmtTL(aidatMap.get(ofis) || 0)}</b></p>
-        <p>Demirbaş: <b>${fmtTL(demirbasMap.get(ofis) || 0)}</b></p>
-      </div>
-    `;
+        <p>Aidat: <b>${fmtTL(aidat.get(ofis)||0)}</b></p>
+        <p>Demirbaş: <b>${fmtTL(dem.get(ofis)||0)}</b></p>
+      </div>`;
   });
 
   adminExcelStatus.textContent =
-    "Tüm ofisler güncel" +
-    (dateStr ? ` (Son güncelleme: ${dateStr})` : "");
+    "Tüm ofisler güncel" + (date ? ` (Son güncelleme: ${date})` : "");
 }
 
-/* ================= AUTH STATE ================= */
-onAuthStateChanged(auth, async user => {
-  if (!user) {
+/* AUTH STATE */
+onAuthStateChanged(auth, async u => {
+  if (!u) {
     loginCard.style.display = "block";
     userPanel.style.display = "none";
     adminPanel.style.display = "none";
     return;
   }
-
-  loginCard.style.display = "none";
-
-  const u = await getUserByEmail(user.email);
-  if (u.admin) {
-    await loadAdminScreen(user.email);
-  } else {
-    await loadUserScreen(user.email);
-  }
+  const user = await getUser(u.email);
+  user.admin ? loadAdmin(u.email) : loadUser(u.email);
 });

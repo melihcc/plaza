@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sedai Plaza | Aidat Takip Sistemi</title>
+  <title>Sedai Plaza | Aidat Takip</title>
   <link rel="icon" href="data:,">
 
   <!-- Google Font -->
@@ -17,7 +17,7 @@
       --text: #0f172a;
       --muted: #64748b;
       --border: #e5e7eb;
-      --success: #16a34a;
+      --danger: #dc2626;
     }
 
     * { box-sizing: border-box; }
@@ -29,7 +29,6 @@
       color: var(--text);
     }
 
-    /* Layout */
     .page {
       min-height: 100vh;
       display: flex;
@@ -43,7 +42,7 @@
       max-width: 1100px;
     }
 
-    /* Login */
+    /* LOGIN */
     .login-card {
       max-width: 420px;
       margin: auto;
@@ -82,6 +81,30 @@
       border-radius: 10px;
       border: 1px solid var(--border);
       font-size: 14px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+    }
+
+    .input-error {
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 0 3px rgba(220,38,38,.15);
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      50% { transform: translateX(4px); }
+      75% { transform: translateX(-4px); }
+      100% { transform: translateX(0); }
+    }
+
+    .shake {
+      animation: shake .3s;
     }
 
     .btn-primary {
@@ -96,20 +119,14 @@
       cursor: pointer;
     }
 
-    .btn-primary:hover {
-      opacity: .95;
-    }
-
-    .muted {
-      color: var(--muted);
+    .login-error {
+      color: var(--danger);
       font-size: 13px;
       margin-top: 12px;
     }
 
-    /* Dashboard */
-    .dashboard {
-      display: none;
-    }
+    /* DASHBOARD */
+    .dashboard { display: none; }
 
     .topbar {
       display: flex;
@@ -138,7 +155,6 @@
       font-weight: 500;
     }
 
-    /* Cards */
     .card {
       background: var(--card);
       border-radius: 16px;
@@ -155,20 +171,15 @@
     th, td {
       padding: 12px;
       border-bottom: 1px solid var(--border);
-      text-align: left;
       font-size: 14px;
     }
 
-    th {
-      color: var(--muted);
-      font-weight: 600;
-    }
+    th { color: var(--muted); }
 
     td:last-child, th:last-child {
       text-align: right;
     }
 
-    /* Admin grid */
     #officeGrid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -186,19 +197,6 @@
     .officeCard h4 {
       margin: 0 0 12px;
       font-size: 18px;
-    }
-
-    .officeCard p {
-      margin: 6px 0;
-      font-size: 14px;
-    }
-
-    .hide { display: none; }
-
-    @media (max-width: 640px) {
-      .login-card {
-        padding: 24px;
-      }
     }
   </style>
 </head>
@@ -223,10 +221,10 @@
 
     <button id="loginBtn" class="btn-primary">Giriş Yap</button>
 
-    <div id="loginMsg" class="muted"></div>
+    <div id="loginMsg" class="login-error"></div>
   </div>
 
-  <!-- USER DASHBOARD -->
+  <!-- USER -->
   <div id="userPanel" class="container dashboard">
     <div class="topbar">
       <div class="title">
@@ -237,7 +235,7 @@
     </div>
 
     <div class="card">
-      <div id="userExcelStatus" class="muted"></div>
+      <div id="userExcelStatus" class="title span"></div>
 
       <table>
         <thead>
@@ -257,7 +255,7 @@
     </div>
   </div>
 
-  <!-- ADMIN DASHBOARD -->
+  <!-- ADMIN -->
   <div id="adminPanel" class="container dashboard">
     <div class="topbar">
       <div class="title">
@@ -271,7 +269,7 @@
       </div>
     </div>
 
-    <div id="adminExcelStatus" class="muted"></div>
+    <div id="adminExcelStatus" class="title span"></div>
     <div id="officeGrid"></div>
   </div>
 
