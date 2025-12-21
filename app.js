@@ -22,13 +22,15 @@ import {
 
 /** 1) Firebase config (Firebase Console -> Project settings -> Web app) */
 const firebaseConfig = {
-  apiKey: "XXX",
-  authDomain: "XXX.firebaseapp.com",
-  projectId: "XXX",
-  storageBucket: "XXX.appspot.com",
-  messagingSenderId: "XXX",
-  appId: "XXX"
+  apiKey: "AIzaSyAnPVgBNvBcwBjiNSCEWnnNb-cE8getjYc",
+  authDomain: "sedaiplazaapp.firebaseapp.com",
+  projectId: "sedaiplazaapp",
+  storageBucket: "sedaiplazaapp.appspot.com",
+  messagingSenderId: "171611145009",
+  appId: "1:171611145009:web:38e59996c6c4c015c16610",
+  measurementId: "G-B5FZWLZ4NW"
 };
+
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
