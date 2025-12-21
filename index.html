@@ -1,78 +1,283 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aidat Takip</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sedai Plaza | Aidat Takip Sistemi</title>
+  <link rel="icon" href="data:,">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 12px; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; }
-    input { padding: 10px; min-width: 240px; }
-    button { padding: 10px 14px; cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background: #f5f5f5; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-top: 14px; }
-    .muted { color: #666; }
-    .right { text-align: right; }
-    .hide { display:none; }
+    :root {
+      --primary: #2563eb;
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e5e7eb;
+      --success: #16a34a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Layout */
+    .page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    /* Login */
+    .login-card {
+      max-width: 420px;
+      margin: auto;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.08);
+    }
+
+    .login-card h1 {
+      margin: 0 0 6px;
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .login-card p {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      opacity: .95;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: none;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .title h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .title span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .btn-outline {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: white;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    td:last-child, th:last-child {
+      text-align: right;
+    }
+
+    /* Admin grid */
+    #officeGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .officeCard {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.06);
+    }
+
+    .officeCard h4 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .officeCard p {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+
+    .hide { display: none; }
+
+    @media (max-width: 640px) {
+      .login-card {
+        padding: 24px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <h1>Aidat Takip</h1>
+<div class="page">
 
   <!-- LOGIN -->
-  <div id="loginCard" class="card">
-    <h3>Giriş</h3>
-    <div class="row">
-      <input id="email" type="email" placeholder="E-posta" />
-      <input id="password" type="password" placeholder="Şifre" />
-      <button id="loginBtn">Giriş Yap</button>
-      <button id="registerBtn">Kayıt Ol</button>
+  <div id="loginCard" class="login-card">
+    <h1>Sedai Plaza</h1>
+    <p>Aidat ve demirbaş bilgilerinizi görüntüleyin</p>
+
+    <div class="field">
+      <label>E-posta</label>
+      <input id="email" type="email" placeholder="ornek@mail.com">
     </div>
-    <p class="muted">Not: Kayıt butonu istersen kaldırılır. (Admin sen yönetiyorsan sadece giriş kalsın.)</p>
-    <p id="loginMsg"></p>
+
+    <div class="field">
+      <label>Şifre</label>
+      <input id="password" type="password" placeholder="••••••••">
+    </div>
+
+    <button id="loginBtn" class="btn-primary">Giriş Yap</button>
+
+    <div id="loginMsg" class="muted"></div>
   </div>
 
-  <!-- DASHBOARD -->
-  <div id="dash" class="card hide">
-    <div class="row" style="justify-content: space-between; align-items:center;">
-      <div>
-        <h3 id="welcome"></h3>
-        <div class="muted" id="meta"></div>
+  <!-- USER DASHBOARD -->
+  <div id="userPanel" class="container dashboard">
+    <div class="topbar">
+      <div class="title">
+        <h2 id="userTitle"></h2>
+        <span id="userMeta"></span>
       </div>
-      <button id="logoutBtn">Çıkış</button>
+      <button id="logoutBtn" class="btn-outline">Çıkış</button>
     </div>
 
-    <hr />
+    <div class="card">
+      <div id="userExcelStatus" class="muted"></div>
 
-    <div class="row" style="align-items:center;">
-      <button id="refreshBtn">Borçları Yenile (Excel)</button>
-      <span class="muted" id="excelInfo"></span>
+      <table>
+        <thead>
+          <tr>
+            <th>Ofis No</th>
+            <th>Borç</th>
+          </tr>
+        </thead>
+        <tbody id="userDebtBody"></tbody>
+        <tfoot>
+          <tr>
+            <th>Toplam</th>
+            <th id="userTotal">0 ₺</th>
+          </tr>
+        </tfoot>
+      </table>
     </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Ofis No</th>
-          <th class="right">Borç</th>
-        </tr>
-      </thead>
-      <tbody id="debtTbody"></tbody>
-      <tfoot>
-        <tr>
-          <th>Toplam</th>
-          <th class="right" id="totalDebt">0</th>
-        </tr>
-      </tfoot>
-    </table>
   </div>
 
-  <!-- XLSX parser lib -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- ADMIN DASHBOARD -->
+  <div id="adminPanel" class="container dashboard">
+    <div class="topbar">
+      <div class="title">
+        <h2 id="adminTitle"></h2>
+        <span id="adminMeta"></span>
+      </div>
+      <div>
+        <input id="excelFileInput" type="file" accept=".xlsx" hidden>
+        <button id="uploadExcelBtn" class="btn-outline">Excel Yükle</button>
+        <button id="logoutBtn2" class="btn-outline">Çıkış</button>
+      </div>
+    </div>
 
-  <!-- App -->
-  <script type="module" src="./app.js"></script>
+    <div id="adminExcelStatus" class="muted"></div>
+    <div id="officeGrid"></div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script type="module" src="./app.js"></script>
 </body>
 </html>
