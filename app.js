@@ -142,12 +142,27 @@ async function loadWorkbook() {
 }
 
 function extractDate(wb) {
-  const rows = XLSX.utils.sheet_to_json(wb.Sheets["GENEL"], { header: 1 });
-  const c = rows?.[0]?.[8];
-  if (!c) return "";
-  const m = c.match(/(\d{2}-\d{2}-\d{4}.*\d{2}:\d{2})/);
-  return m ? m[1].replace(/-/g, ".") : "";
+  const sheet = wb.Sheets["GENEL"];
+  if (!sheet) return "";
+
+  // Yeni tarih hücresi: A26
+  const cell = sheet["A26"];
+  if (!cell || typeof cell.v !== "string") return "";
+
+  // Beklenen format:
+  // "TARİH 08-12-2025 SAAT : 15:30"
+  const match = cell.v.match(
+    /(\d{2})[-./](\d{2})[-./](\d{4}).*?(\d{2}:\d{2})/
+  );
+
+  if (!match) return "";
+
+  const [, day, month, year, time] = match;
+
+  // Ekranda düzgün gösterim
+  return `${day}.${month}.${year} ${time}`;
 }
+
 
 function parseGenel(wb) {
   const rows = XLSX.utils.sheet_to_json(wb.Sheets["GENEL"], { header: 1 });
