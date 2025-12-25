@@ -176,78 +176,53 @@ function parseGenel(wb) {
 }
 
 function parseDemirbas(wb) {
-  // Sayfa adını esnek bul (DEMİRBAŞ / DEMIRBAS varyasyonları)
-  const sheetName =
-    (wb.SheetNames || []).find(n => String(n).toUpperCase().includes("DEMİRBAŞ")) ||
-    (wb.SheetNames || []).find(n => String(n).toUpperCase().includes("DEMIRBAS")) ||
-    "DEMİRBAŞ";
-
-  const ws = wb.Sheets[sheetName];
+  const ws = wb.Sheets["DEMİRBAŞ"];
   const map = new Map();
   if (!ws) return map;
 
-  // raw:false -> "1.500,00 ₺" gibi görünen değerleri string olarak yakalamaya yardımcı olur
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: "" });
+  // A = Ofis No, E = Toplam
+  // header:1 → satır satır array
+  const rows = XLSX.utils.sheet_to_json(ws, {
+    header: 1,
+    raw: true,
+    defval: ""
+  });
 
-  // Para değerini sayıya çevir (TR format: 1.500,00 ₺)
-  const moneyToNumber = (val) => {
-    if (val === null || val === undefined) return 0;
+  // Para string / number güvenli çevirici
+  const toNumber = (val) => {
+    if (val === null || val === undefined || val === "") return 0;
 
-    // Direkt sayı geldiyse
-    if (typeof val === "number") return isFinite(val) ? val : 0;
+    // Excel bazen sayıyı number verir
+    if (typeof val === "number") return val;
 
     let s = String(val).trim();
-    if (!s || s === "-" || s.includes("-")) return 0; // "- ₺" gibi
+    if (!s || s === "-") return 0;
 
-    // ₺, boşluk vb. at
+    // ₺, boşluk temizle
     s = s.replace(/[₺\s]/g, "");
 
-    // TR format: 1.500,00 => 1500.00
-    // önce binlik noktaları sil, sonra virgülü noktaya çevir
+    // 1.234,56 → 1234.56
     s = s.replace(/\./g, "").replace(/,/g, ".");
 
-    const num = parseFloat(s);
-    return isFinite(num) ? num : 0;
+    const n = parseFloat(s);
+    return isFinite(n) ? n : 0;
   };
 
-  // Header satırını ve kolonları bul
-  let headerRow = -1;
-  let officeCol = -1;
-  let totalCol = -1;
+  // 1. satır başlık, 2. satırdan itibaren veri
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row) continue;
 
-  for (let r = 0; r < rows.length; r++) {
-    const row = rows[r] || [];
-    for (let c = 0; c < row.length; c++) {
-      const cell = String(row[c] ?? "").toUpperCase();
-      if (officeCol === -1 && cell.includes("OFİS") && cell.includes("NO")) officeCol = c;
-      if (totalCol === -1 && cell.includes("TOPLAM")) totalCol = c;
-    }
-    if (officeCol !== -1 && totalCol !== -1) {
-      headerRow = r;
-      break;
-    }
-  }
-
-  if (headerRow === -1) return map;
-
-  // Verileri oku
-  for (let r = headerRow + 1; r < rows.length; r++) {
-    const row = rows[r] || [];
-    const officeRaw = row[officeCol];
-
-    if (officeRaw === "" || officeRaw === null || officeRaw === undefined) break;
-
-    const office = String(officeRaw).trim();
+    const office = String(row[0] ?? "").trim(); // A sütunu
     if (!office) break;
 
-    const totalRaw = row[totalCol];
-    const total = moneyToNumber(totalRaw);
-
+    const total = toNumber(row[4]); // 🔴 E sütunu
     map.set(office, total);
   }
 
   return map;
 }
+
 
 
 /* ADMIN UPLOAD */
