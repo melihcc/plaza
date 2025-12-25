@@ -210,15 +210,20 @@ function parseDemirbas(wb) {
 
   // 1. satır başlık, 2. satırdan itibaren veri
   for (let r = 1; r < rows.length; r++) {
-    const row = rows[r];
-    if (!row) continue;
+  const row = rows[r];
+  if (!row) continue;
 
-    const office = String(row[0] ?? "").trim(); // A sütunu
-    if (!office) break;
+  const officeRaw = String(row[0] ?? "").trim();
 
-    const total = toNumber(row[4]); // 🔴 E sütunu
-    map.set(office, total);
-  }
+  // 🔴 OFİSNO, boş, yazı vb. satırları atla
+  if (!officeRaw || !/^\d+$/.test(officeRaw)) continue;
+
+  const office = officeRaw;
+  const total = toNumber(row[4]); // E sütunu
+
+  map.set(office, total);
+}
+
 
   return map;
 }
