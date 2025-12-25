@@ -176,13 +176,79 @@ function parseGenel(wb) {
 }
 
 function parseDemirbas(wb) {
-  const rows = XLSX.utils.sheet_to_json(wb.Sheets["DEMİRBAŞ"], { header: 1 });
+  // Sayfa adını esnek bul (DEMİRBAŞ / DEMIRBAS varyasyonları)
+  const sheetName =
+    (wb.SheetNames || []).find(n => String(n).toUpperCase().includes("DEMİRBAŞ")) ||
+    (wb.SheetNames || []).find(n => String(n).toUpperCase().includes("DEMIRBAS")) ||
+    "DEMİRBAŞ";
+
+  const ws = wb.Sheets[sheetName];
   const map = new Map();
-  rows.forEach(r => {
-    if (r[0] && !isNaN(r[4])) map.set(String(r[0]), Number(r[4]));
-  });
+  if (!ws) return map;
+
+  // raw:false -> "1.500,00 ₺" gibi görünen değerleri string olarak yakalamaya yardımcı olur
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: "" });
+
+  // Para değerini sayıya çevir (TR format: 1.500,00 ₺)
+  const moneyToNumber = (val) => {
+    if (val === null || val === undefined) return 0;
+
+    // Direkt sayı geldiyse
+    if (typeof val === "number") return isFinite(val) ? val : 0;
+
+    let s = String(val).trim();
+    if (!s || s === "-" || s.includes("-")) return 0; // "- ₺" gibi
+
+    // ₺, boşluk vb. at
+    s = s.replace(/[₺\s]/g, "");
+
+    // TR format: 1.500,00 => 1500.00
+    // önce binlik noktaları sil, sonra virgülü noktaya çevir
+    s = s.replace(/\./g, "").replace(/,/g, ".");
+
+    const num = parseFloat(s);
+    return isFinite(num) ? num : 0;
+  };
+
+  // Header satırını ve kolonları bul
+  let headerRow = -1;
+  let officeCol = -1;
+  let totalCol = -1;
+
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r] || [];
+    for (let c = 0; c < row.length; c++) {
+      const cell = String(row[c] ?? "").toUpperCase();
+      if (officeCol === -1 && cell.includes("OFİS") && cell.includes("NO")) officeCol = c;
+      if (totalCol === -1 && cell.includes("TOPLAM")) totalCol = c;
+    }
+    if (officeCol !== -1 && totalCol !== -1) {
+      headerRow = r;
+      break;
+    }
+  }
+
+  if (headerRow === -1) return map;
+
+  // Verileri oku
+  for (let r = headerRow + 1; r < rows.length; r++) {
+    const row = rows[r] || [];
+    const officeRaw = row[officeCol];
+
+    if (officeRaw === "" || officeRaw === null || officeRaw === undefined) break;
+
+    const office = String(officeRaw).trim();
+    if (!office) break;
+
+    const totalRaw = row[totalCol];
+    const total = moneyToNumber(totalRaw);
+
+    map.set(office, total);
+  }
+
   return map;
 }
+
 
 /* ADMIN UPLOAD */
 excelFileInput.addEventListener("change", async e => {
