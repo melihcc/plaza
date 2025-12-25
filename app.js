@@ -241,28 +241,44 @@ excelFileInput.addEventListener("change", async e => {
 /* SCREENS */
 async function loadUser(email) {
   loginCard.style.display = "none";
+  adminPanel.style.display = "none";
   userPanel.style.display = "block";
 
   const user = await getUser(email);
-  const wb = await loadWorkbook();
-  const aidat = parseGenel(wb);
-  const date = extractDate(wb);
 
   userTitle.textContent = `${user.name} ${user.surname}`;
   userMeta.textContent = email;
-  userDebtBody.innerHTML = "";
 
-  let total = 0;
-  user.no.forEach(no => {
-    const d = aidat.get(String(no)) || 0;
-    total += d;
+  const wb = await loadWorkbook();
+  const aidatMap = parseGenel(wb);
+  const demirbasMap = parseDemirbas(wb);
+  const dateStr = extractDate(wb);
+
+  userDebtBody.innerHTML = "";
+  let grandTotal = 0;
+
+  user.no.forEach(ofis => {
+    const aidat = aidatMap.get(String(ofis)) || 0;
+    const demirbas = demirbasMap.get(String(ofis)) || 0;
+    const total = aidat + demirbas;
+
+    grandTotal += total;
+
     userDebtBody.innerHTML += `
-      <tr><td>${no}</td><td>${fmtTL(d)}</td></tr>`;
+      <tr>
+        <td>Ofis ${ofis}</td>
+        <td>${fmtTL(aidat)}</td>
+        <td>${fmtTL(demirbas)}</td>
+        <td><b>${fmtTL(total)}</b></td>
+      </tr>
+    `;
   });
 
-  userTotal.textContent = fmtTL(total);
+  userTotal.textContent = fmtTL(grandTotal);
+
   userExcelStatus.textContent =
-    "Aidat bilgileri güncel" + (date ? ` (Son güncelleme: ${date})` : "");
+    "Aidat bilgileri güncel" +
+    (dateStr ? ` (Son güncelleme: ${dateStr})` : "");
 }
 
 async function loadAdmin(email) {
