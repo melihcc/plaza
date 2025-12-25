@@ -205,31 +205,71 @@ async function loadUser(email) {
 }
 
 async function loadAdmin(email) {
+  // Paneller
   loginCard.style.display = "none";
+  userPanel.style.display = "none";
   adminPanel.style.display = "block";
 
+  // Kullanıcı bilgisi
   const user = await getUser(email);
-  const wb = await loadWorkbook();
-  const aidat = parseGenel(wb);
-  const dem = parseDemirbas(wb);
-  const date = extractDate(wb);
 
+  // Excel verileri
+  const wb = await loadWorkbook();
+  const aidatMap = parseGenel(wb);
+  const demirbasMap = parseDemirbas(wb);
+  const dateStr = extractDate(wb);
+
+  // Üst başlıklar
   adminTitle.textContent = `${user.name} ${user.surname}`;
   adminMeta.textContent = email;
+
+  // Grid temizle
   officeGrid.innerHTML = "";
 
-  [...new Set([...aidat.keys(), ...dem.keys()])].forEach(ofis => {
+  /* ------------------------------
+     OFİSLERİ SAYISAL SIRALA
+  -------------------------------- */
+  const offices = [...new Set([
+    ...aidatMap.keys(),
+    ...demirbasMap.keys()
+  ])]
+    .map(v => String(v).trim())
+    .filter(v => v.length > 0)
+    .sort((a, b) => {
+      const na = parseInt(a.replace(/\D/g, ""), 10);
+      const nb = parseInt(b.replace(/\D/g, ""), 10);
+
+      const aNum = Number.isFinite(na);
+      const bNum = Number.isFinite(nb);
+
+      if (aNum && bNum) return na - nb;     // 1,2,3,10...
+      if (aNum && !bNum) return -1;
+      if (!aNum && bNum) return 1;
+      return a.localeCompare(b, "tr");      // fallback
+    });
+
+  /* ------------------------------
+     KARTLARI BAS
+  -------------------------------- */
+  offices.forEach(ofis => {
+    const aidat = aidatMap.get(ofis) || 0;
+    const demirbas = demirbasMap.get(ofis) || 0;
+
     officeGrid.innerHTML += `
       <div class="officeCard">
         <h4>Ofis ${ofis}</h4>
-        <p>Aidat: <b>${fmtTL(aidat.get(ofis)||0)}</b></p>
-        <p>Demirbaş: <b>${fmtTL(dem.get(ofis)||0)}</b></p>
-      </div>`;
+        <p>Aidat: <b>${fmtTL(aidat)}</b></p>
+        <p>Demirbaş: <b>${fmtTL(demirbas)}</b></p>
+      </div>
+    `;
   });
 
+  // Alt bilgi
   adminExcelStatus.textContent =
-    "Tüm ofisler güncel" + (date ? ` (Son güncelleme: ${date})` : "");
+    "Tüm ofisler güncel" +
+    (dateStr ? ` (Son güncelleme: ${dateStr})` : "");
 }
+
 
 /* AUTH STATE */
 onAuthStateChanged(auth, async u => {
