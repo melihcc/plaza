@@ -178,32 +178,17 @@
       font-size:18px;
     }
 
-    /* SEO TEXT */
-    .seo-section {
-      margin-top:60px;
-      max-width:900px;
-      margin-left:auto;
-      margin-right:auto;
-      color:#475569;
-      font-size:14px;
-      line-height:1.7;
+    /* USER TABLO HİZALAMA */
+    #userPanel table th,
+    #userPanel table td {
+      text-align:center;
+      vertical-align:middle;
     }
 
-    .seo-section p { margin-bottom:14px }
-
-    /* USER TABLO HİZALAMA DÜZELTMESİ */
-#userPanel table th,
-#userPanel table td {
-  text-align: center;
-  vertical-align: middle;
-}
-
-/* Ofis no biraz solda kalsın istersen */
-#userPanel table th:first-child,
-#userPanel table td:first-child {
-  text-align: left;
-}
-
+    #userPanel table th:first-child,
+    #userPanel table td:first-child {
+      text-align:left;
+    }
   </style>
 </head>
 
@@ -245,21 +230,20 @@
 
       <table>
         <thead>
-  <tr>
-    <th>Ofis No</th>
-    <th>Aidat</th>
-    <th>Demirbaş</th>
-    <th>Toplam</th>
-  </tr>
-</thead>
-<tbody id="userDebtBody"></tbody>
-<tfoot>
-  <tr>
-    <th colspan="3">Genel Toplam</th>
-    <th id="userTotal">0 ₺</th>
-  </tr>
-</tfoot>
-
+          <tr>
+            <th>Ofis No</th>
+            <th>Aidat</th>
+            <th>Demirbaş</th>
+            <th>Toplam</th>
+          </tr>
+        </thead>
+        <tbody id="userDebtBody"></tbody>
+        <tfoot>
+          <tr>
+            <th colspan="3">Genel Toplam</th>
+            <th id="userTotal">0 ₺</th>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>
@@ -274,40 +258,59 @@
       <div>
         <input id="excelFileInput" type="file" accept=".xlsx" hidden>
         <button id="uploadExcelBtn" class="btn-outline">Excel Yükle</button>
+        <!-- EKLENEN BUTONLAR -->
+        <button id="showAidatBtn" class="btn-outline">Aidatları Gör</button>
+        <button id="showCreateUserBtn" class="btn-outline">Kullanıcı Ekle</button>
         <button id="logoutBtn2" class="btn-outline">Çıkış</button>
       </div>
     </div>
 
-    <div id="adminExcelStatus"></div>
+    <!-- AİDAT GRID (MEVCUT) -->
     <div id="officeGrid"></div>
+
+    <!-- KULLANICI EKLE FORMU (YENİ) -->
+    <div id="createUserCard" class="card" style="display:none; max-width:480px;">
+      <h3>Yeni Kullanıcı Ekle</h3>
+
+      <div class="field">
+        <label>E-posta</label>
+        <input id="newUserEmail" type="email">
+      </div>
+
+      <div class="field">
+        <label>Şifre</label>
+        <input id="newUserPassword" type="password">
+      </div>
+
+      <div class="field">
+        <label>Ad</label>
+        <input id="newUserName" type="text">
+      </div>
+
+      <div class="field">
+        <label>Soyad</label>
+        <input id="newUserSurname" type="text">
+      </div>
+
+      <div class="field">
+        <label>Ofis No (1,2,3)</label>
+        <input id="newUserNo" type="text">
+      </div>
+
+      <div class="field">
+        <label>
+          <input id="newUserAdmin" type="checkbox">
+          Admin yetkisi
+        </label>
+      </div>
+
+      <button id="createUserBtn" class="btn-primary">Kullanıcı Ekle</button>
+      <div id="createUserMsg" class="login-error"></div>
+    </div>
+
   </div>
 
 </div>
-
-<!-- SEO CONTENT (GOOGLE İÇİN) -->
-<section class="seo-section">
-  <p>
-    <strong>Sedai Plaza Aidat Takip Sistemi</strong>, plaza ve site yönetimleri için
-    geliştirilmiş modern bir online aidat görüntüleme platformudur.
-    Ofis sahipleri, kendilerine tanımlı ofis numaralarına ait
-    <strong>aidat ve demirbaş borçlarını</strong> güvenli bir şekilde
-    internet üzerinden görüntüleyebilir.
-  </p>
-
-  <p>
-    Sistem, güncel aidat bilgilerini yönetim tarafından yüklenen veriler üzerinden
-    otomatik olarak sunar. Kullanıcılar, herhangi bir kurulum yapmadan
-    sadece tarayıcı üzerinden giriş yaparak
-    <strong>ofis aidat borçlarını online</strong> olarak takip edebilir.
-  </p>
-
-  <p>
-    Sedai Plaza için özel olarak geliştirilen bu platform,
-    şeffaflık, hız ve kullanım kolaylığını ön planda tutar.
-    Aidat takibi, borç sorgulama ve demirbaş bilgilerine erişim
-    tek bir ekrandan pratik şekilde sağlanır.
-  </p>
-</section>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script type="module" src="./app.js"></script>

@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"; 
 import {
   getAuth,
   onAuthStateChanged,
@@ -19,6 +19,12 @@ import {
   uploadBytes
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
+/* 🔽 EKLENEN: FUNCTIONS */
+import {
+  getFunctions,
+  httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
+
 /* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyAnPVgBNvBcwBjiNSCEWnnNb-cE8getjYc",
@@ -33,6 +39,11 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+/* 🔽 EKLENEN: FUNCTIONS INIT */
+const functions = getFunctions(app, "us-central1");
+const createUserWithData = httpsCallable(functions, "createUserWithData");
+
 const EXCEL_PATH = "deneme.xlsx";
 
 /* UI */
@@ -62,6 +73,21 @@ const officeGrid = document.getElementById("officeGrid");
 const uploadExcelBtn = document.getElementById("uploadExcelBtn");
 const excelFileInput = document.getElementById("excelFileInput");
 
+/* 🔽 EKLENEN: ADMIN TOGGLE + FORM */
+const showAidatBtn = document.getElementById("showAidatBtn");
+const showCreateUserBtn = document.getElementById("showCreateUserBtn");
+
+const createUserCard = document.getElementById("createUserCard");
+const createUserBtn = document.getElementById("createUserBtn");
+const createUserMsg = document.getElementById("createUserMsg");
+
+const newUserEmail = document.getElementById("newUserEmail");
+const newUserPassword = document.getElementById("newUserPassword");
+const newUserName = document.getElementById("newUserName");
+const newUserSurname = document.getElementById("newUserSurname");
+const newUserNo = document.getElementById("newUserNo");
+const newUserAdmin = document.getElementById("newUserAdmin");
+
 /* EVENTS */
 loginBtn.addEventListener("click", login);
 
@@ -81,6 +107,27 @@ loginBtn.addEventListener("click", login);
 if (logoutBtn) logoutBtn.onclick = () => signOut(auth);
 if (logoutBtn2) logoutBtn2.onclick = () => signOut(auth);
 if (uploadExcelBtn) uploadExcelBtn.onclick = () => excelFileInput.click();
+
+/* 🔽 EKLENEN: ADMIN PANEL TOGGLE */
+if (showCreateUserBtn) {
+  showCreateUserBtn.onclick = () => {
+    officeGrid.style.visibility = "hidden";
+    officeGrid.style.height = "0";
+    officeGrid.style.overflow = "hidden";
+
+    createUserCard.style.display = "block";
+  };
+}
+
+if (showAidatBtn) {
+  showAidatBtn.onclick = () => {
+    officeGrid.style.visibility = "visible";
+    officeGrid.style.height = "auto";
+    officeGrid.style.overflow = "initial";
+
+    createUserCard.style.display = "none";
+  };
+}
 
 /* HELPERS */
 function fmtTL(n) {
@@ -145,12 +192,9 @@ function extractDate(wb) {
   const sheet = wb.Sheets["GENEL"];
   if (!sheet) return "";
 
-  // Yeni tarih hücresi: A26
   const cell = sheet["A26"];
   if (!cell || typeof cell.v !== "string") return "";
 
-  // Beklenen format:
-  // "TARİH 08-12-2025 SAAT : 15:30"
   const match = cell.v.match(
     /(\d{2})[-./](\d{2})[-./](\d{4}).*?(\d{2}:\d{2})/
   );
@@ -158,11 +202,8 @@ function extractDate(wb) {
   if (!match) return "";
 
   const [, day, month, year, time] = match;
-
-  // Ekranda düzgün gösterim
   return `${day}.${month}.${year} ${time}`;
 }
-
 
 function parseGenel(wb) {
   const rows = XLSX.utils.sheet_to_json(wb.Sheets["GENEL"], { header: 1 });
@@ -180,55 +221,38 @@ function parseDemirbas(wb) {
   const map = new Map();
   if (!ws) return map;
 
-  // A = Ofis No, E = Toplam
-  // header:1 → satır satır array
   const rows = XLSX.utils.sheet_to_json(ws, {
     header: 1,
     raw: true,
     defval: ""
   });
 
-  // Para string / number güvenli çevirici
   const toNumber = (val) => {
     if (val === null || val === undefined || val === "") return 0;
-
-    // Excel bazen sayıyı number verir
     if (typeof val === "number") return val;
 
     let s = String(val).trim();
     if (!s || s === "-") return 0;
-
-    // ₺, boşluk temizle
     s = s.replace(/[₺\s]/g, "");
-
-    // 1.234,56 → 1234.56
     s = s.replace(/\./g, "").replace(/,/g, ".");
-
     const n = parseFloat(s);
     return isFinite(n) ? n : 0;
   };
 
-  // 1. satır başlık, 2. satırdan itibaren veri
   for (let r = 1; r < rows.length; r++) {
-  const row = rows[r];
-  if (!row) continue;
+    const row = rows[r];
+    if (!row) continue;
 
-  const officeRaw = String(row[0] ?? "").trim();
+    const officeRaw = String(row[0] ?? "").trim();
+    if (!officeRaw || !/^\d+$/.test(officeRaw)) continue;
 
-  // 🔴 OFİSNO, boş, yazı vb. satırları atla
-  if (!officeRaw || !/^\d+$/.test(officeRaw)) continue;
-
-  const office = officeRaw;
-  const total = toNumber(row[4]); // E sütunu
-
-  map.set(office, total);
-}
-
+    const office = officeRaw;
+    const total = toNumber(row[4]);
+    map.set(office, total);
+  }
 
   return map;
 }
-
-
 
 /* ADMIN UPLOAD */
 excelFileInput.addEventListener("change", async e => {
@@ -237,6 +261,32 @@ excelFileInput.addEventListener("change", async e => {
   await uploadBytes(ref(storage, EXCEL_PATH), f);
   await loadAdmin(auth.currentUser.email);
 });
+
+/* 🔽 EKLENEN: CREATE USER */
+if (createUserBtn) {
+  createUserBtn.onclick = async () => {
+    createUserMsg.textContent = "";
+
+    const data = {
+      email: newUserEmail.value.trim(),
+      password: newUserPassword.value,
+      name: newUserName.value.trim(),
+      surname: newUserSurname.value.trim(),
+      admin: newUserAdmin.checked,
+      no: newUserNo.value
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean)
+    };
+
+    try {
+      await createUserWithData(data);
+      createUserMsg.textContent = "Kullanıcı başarıyla oluşturuldu.";
+    } catch (e) {
+      createUserMsg.textContent = e?.message || "Kullanıcı oluşturulamadı.";
+    }
+  };
+}
 
 /* SCREENS */
 async function loadUser(email) {
@@ -282,52 +332,30 @@ async function loadUser(email) {
 }
 
 async function loadAdmin(email) {
-  // Paneller
   loginCard.style.display = "none";
   userPanel.style.display = "none";
   adminPanel.style.display = "block";
 
-  // Kullanıcı bilgisi
   const user = await getUser(email);
 
-  // Excel verileri
   const wb = await loadWorkbook();
   const aidatMap = parseGenel(wb);
   const demirbasMap = parseDemirbas(wb);
   const dateStr = extractDate(wb);
 
-  // Üst başlıklar
   adminTitle.textContent = `${user.name} ${user.surname}`;
   adminMeta.textContent = email;
 
-  // Grid temizle
   officeGrid.innerHTML = "";
 
-  /* ------------------------------
-     OFİSLERİ SAYISAL SIRALA
-  -------------------------------- */
   const offices = [...new Set([
     ...aidatMap.keys(),
     ...demirbasMap.keys()
   ])]
     .map(v => String(v).trim())
     .filter(v => v.length > 0)
-    .sort((a, b) => {
-      const na = parseInt(a.replace(/\D/g, ""), 10);
-      const nb = parseInt(b.replace(/\D/g, ""), 10);
+    .sort((a, b) => parseInt(a) - parseInt(b));
 
-      const aNum = Number.isFinite(na);
-      const bNum = Number.isFinite(nb);
-
-      if (aNum && bNum) return na - nb;     // 1,2,3,10...
-      if (aNum && !bNum) return -1;
-      if (!aNum && bNum) return 1;
-      return a.localeCompare(b, "tr");      // fallback
-    });
-
-  /* ------------------------------
-     KARTLARI BAS
-  -------------------------------- */
   offices.forEach(ofis => {
     const aidat = aidatMap.get(ofis) || 0;
     const demirbas = demirbasMap.get(ofis) || 0;
@@ -341,12 +369,10 @@ async function loadAdmin(email) {
     `;
   });
 
-  // Alt bilgi
   adminExcelStatus.textContent =
     "Tüm ofisler güncel" +
     (dateStr ? ` (Son güncelleme: ${dateStr})` : "");
 }
-
 
 /* AUTH STATE */
 onAuthStateChanged(auth, async u => {
@@ -356,6 +382,7 @@ onAuthStateChanged(auth, async u => {
     adminPanel.style.display = "none";
     return;
   }
+
   const user = await getUser(u.email);
   user.admin ? loadAdmin(u.email) : loadUser(u.email);
 });
