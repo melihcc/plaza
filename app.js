@@ -47,6 +47,12 @@ const deleteUserWithData = httpsCallable(functions, "deleteUserWithData");
 
 const EXCEL_PATH = "deneme.xlsx";
 
+const userTitle = document.getElementById("userTitle");
+const userMeta = document.getElementById("userMeta");
+const adminTitle = document.getElementById("adminTitle");
+const adminMeta = document.getElementById("adminMeta");
+
+
 /* ================= CACHE ================= */
 let cachedWorkbook = null;
 let cachedAidatMap = null;
@@ -264,6 +270,38 @@ async function renderAidatGrid() {
     `;
   });
 }
+async function renderUserAidatTable(user) {
+  await ensureAidatLoaded();
+
+  const tbody = document.getElementById("userDebtBody");
+  const totalCell = document.getElementById("userTotal");
+  const status = document.getElementById("userExcelStatus");
+
+  tbody.innerHTML = "";
+  let grandTotal = 0;
+
+  (user.no || []).forEach(ofis => {
+    const aidat = cachedAidatMap.get(String(ofis)) || 0;
+    const demirbas = cachedDemirbasMap.get(String(ofis)) || 0;
+    const total = aidat + demirbas;
+
+    grandTotal += total;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>Ofis ${ofis}</td>
+        <td>${fmtTL(aidat)}</td>
+        <td>${fmtTL(demirbas)}</td>
+        <td><b>${fmtTL(total)}</b></td>
+      </tr>
+    `;
+  });
+
+  totalCell.textContent = fmtTL(grandTotal);
+  status.textContent =
+    "Aidat bilgileri güncel" +
+    (cachedDateStr ? ` (Son güncelleme: ${cachedDateStr})` : "");
+}
 
 excelFileInput.onchange = async e => {
   const f = e.target.files[0];
@@ -283,14 +321,23 @@ onAuthStateChanged(auth, async user => {
   }
 
   const u = await getUser(user.email);
-  loginCard.style.display = "none";
+loginCard.style.display = "none";
 
-  if (u.admin) {
-    adminPanel.style.display = "block";
-    hideAllAdminViews();
-    officeGrid.style.display = "grid";
-    await renderAidatGrid();
-  } else {
-    userPanel.style.display = "block";
-  }
+/* 🔽 İSİM + MAİL GÖSTER */
+if (u.admin) {
+  adminTitle.textContent = `${u.name} ${u.surname}`;
+  adminMeta.textContent = user.email;
+
+  adminPanel.style.display = "block";
+  hideAllAdminViews();
+  officeGrid.style.display = "grid";
+  await renderAidatGrid();
+} else {
+  userTitle.textContent = `${u.name} ${u.surname}`;
+  userMeta.textContent = user.email;
+
+  userPanel.style.display = "block";
+  await renderUserAidatTable(u);
+}
+
 });
