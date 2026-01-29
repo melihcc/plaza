@@ -156,7 +156,7 @@
     th { color:var(--muted) }
 
     td:last-child, th:last-child {
-      text-align:right;
+      text-align:center;
     }
 
     #officeGrid {
@@ -188,6 +188,17 @@
     #userPanel table th:first-child,
     #userPanel table td:first-child {
       text-align:left;
+    }
+
+    .delete-btn {
+      color:#dc2626;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    .lock {
+      color:#64748b;
+      font-size:16px;
     }
   </style>
 </head>
@@ -258,17 +269,18 @@
       <div>
         <input id="excelFileInput" type="file" accept=".xlsx" hidden>
         <button id="uploadExcelBtn" class="btn-outline">Excel Yükle</button>
-        <!-- EKLENEN BUTONLAR -->
         <button id="showAidatBtn" class="btn-outline">Aidatları Gör</button>
         <button id="showCreateUserBtn" class="btn-outline">Kullanıcı Ekle</button>
+        <!-- 🔽 YENİ -->
+        <button id="showUserListBtn" class="btn-outline">Kullanıcı Yönetimi</button>
         <button id="logoutBtn2" class="btn-outline">Çıkış</button>
       </div>
     </div>
 
-    <!-- AİDAT GRID (MEVCUT) -->
+    <!-- AİDAT GRID -->
     <div id="officeGrid"></div>
 
-    <!-- KULLANICI EKLE FORMU (YENİ) -->
+    <!-- KULLANICI EKLE -->
     <div id="createUserCard" class="card" style="display:none; max-width:480px;">
       <h3>Yeni Kullanıcı Ekle</h3>
 
@@ -306,6 +318,26 @@
 
       <button id="createUserBtn" class="btn-primary">Kullanıcı Ekle</button>
       <div id="createUserMsg" class="login-error"></div>
+    </div>
+
+    <!-- 🔽 KULLANICI YÖNETİMİ (YENİ) -->
+    <div id="userListCard" class="card" style="display:none;">
+      <h3>Kullanıcı Yönetimi</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Ad Soyad</th>
+            <th>E-posta</th>
+            <th>Ofis No</th>
+            <th>Admin</th>
+            <th>Sil</th>
+          </tr>
+        </thead>
+        <tbody id="userListBody">
+          <!-- JS ile doldurulacak -->
+        </tbody>
+      </table>
     </div>
 
   </div>
